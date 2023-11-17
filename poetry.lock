@@ -484,6 +484,64 @@ files = [
 ]
 
 [[package]]
+name = "httpcore"
+version = "0.17.3"
+description = "A minimal low-level HTTP client."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "httpcore-0.17.3-py3-none-any.whl", hash = "sha256:c2789b767ddddfa2a5782e3199b2b7f6894540b17b16ec26b2c4d8e103510b87"},
+    {file = "httpcore-0.17.3.tar.gz", hash = "sha256:a6f30213335e34c1ade7be6ec7c47f19f50c56db36abef1a9dfa3815b1cb3888"},
+]
+
+[package.dependencies]
+anyio = ">=3.0,<5.0"
+certifi = "*"
+h11 = ">=0.13,<0.15"
+sniffio = "==1.*"
+
+[package.extras]
+http2 = ["h2 (>=3,<5)"]
+socks = ["socksio (==1.*)"]
+
+[[package]]
+name = "httpx"
+version = "0.24.1"
+description = "The next generation HTTP client."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "httpx-0.24.1-py3-none-any.whl", hash = "sha256:06781eb9ac53cde990577af654bd990a4949de37a28bdb4a230d434f3a30b9bd"},
+    {file = "httpx-0.24.1.tar.gz", hash = "sha256:5853a43053df830c20f8110c5e69fe44d035d850b2dfe795e196f00fdb774bdd"},
+]
+
+[package.dependencies]
+certifi = "*"
+httpcore = ">=0.15.0,<0.18.0"
+idna = "*"
+sniffio = "*"
+
+[package.extras]
+brotli = ["brotli", "brotlicffi"]
+cli = ["click (==8.*)", "pygments (==2.*)", "rich (>=10,<14)"]
+http2 = ["h2 (>=3,<5)"]
+socks = ["socksio (==1.*)"]
+
+[[package]]
+name = "httpx-oauth"
+version = "0.13.0"
+description = "Async OAuth client using HTTPX"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "httpx_oauth-0.13.0-py3-none-any.whl", hash = "sha256:245f04bc8340da4184d26ec0d589e35e7e8f5af6157f30b6e012c0896f80f875"},
+    {file = "httpx_oauth-0.13.0.tar.gz", hash = "sha256:ed7359053ac1b1652adbb18b074b6709bcee54e28fb76dd8062c408cfc4589c3"},
+]
+
+[package.dependencies]
+httpx = ">=0.18,<0.25"
+
+[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -1623,6 +1681,23 @@ watchdog = {version = ">=2.1.5", markers = "platform_system != \"Darwin\""}
 snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python (>=0.9.0)"]
 
 [[package]]
+name = "streamlit-auth"
+version = "0.1.7.1"
+description = "A Python package for creating oauth protected Streamlit apps"
+optional = false
+python-versions = ">=3.8.0"
+files = [
+    {file = "streamlit-auth-0.1.7.1.tar.gz", hash = "sha256:b5d7885a8fec105f53723301f43cbaedac9ea0ab0e41ae404b79f2f255473c55"},
+    {file = "streamlit_auth-0.1.7.1-py3-none-any.whl", hash = "sha256:1693627e86c871ba82a5dddc21570d31840c0049e6540ed3d930183d5492b25b"},
+]
+
+[package.dependencies]
+extra-streamlit-components = "*"
+httpx-oauth = "*"
+pyjwt = "*"
+streamlit-keycloak = "*"
+
+[[package]]
 name = "streamlit-authenticator"
 version = "0.2.3"
 description = "A secure authentication module to validate user credentials in a Streamlit application."
@@ -1638,6 +1713,20 @@ extra-streamlit-components = ">=0.1.60"
 PyJWT = ">=2.3.0"
 PyYAML = ">=5.3.1"
 streamlit = ">=1.18.0"
+
+[[package]]
+name = "streamlit-keycloak"
+version = "1.1.1"
+description = "Keycloak authentication for Streamlit"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "streamlit-keycloak-1.1.1.tar.gz", hash = "sha256:797feeeb7c463f46535b1b29207bf11f4492bcb137145d758d4faab15d329992"},
+    {file = "streamlit_keycloak-1.1.1-py3-none-any.whl", hash = "sha256:55558ddaf3e62f1d67b7840044f3b6416d26925f3e542954af751dd1d480565a"},
+]
+
+[package.dependencies]
+streamlit = ">=0.63"
 
 [[package]]
 name = "tenacity"
@@ -1859,4 +1948,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1b7da514a55cc53569dc6dedecf11fb5b29c0c310c74ab056b79e97bf127da79"
+content-hash = "40d94cbe307c9cc62e99a5a2d1f5d8a30103f8db8256f9e6cabf70ab1055055d"

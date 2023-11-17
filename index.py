@@ -1,8 +1,21 @@
 import streamlit as st
 from utils.http_client import fetch
 
+# secrets.toml からユーザー名とパスワードを読み込む
+usernames = st.secrets["usernames"]["users"]
+passwords = st.secrets["passwords"]["users"]
+
+# ユーザー名とパスワードを辞書として格納
+credentials = dict(zip(usernames, passwords))
+
+
+def check_credentials(username, password):
+    """与えられたユーザー名とパスワードの組み合わせが正しいか確認する"""
+    return credentials.get(username) == password
+
 
 def main():
+    """メインのアプリケーション"""
     st.title("Streamlit app")
 
     name = st.text_input("Name")
@@ -21,5 +34,13 @@ def main():
             st.error("All fields are required")
 
 
-if __name__ == "__main__":
-    main()
+# ログインフォーム
+username = st.sidebar.text_input("Username")
+password = st.sidebar.text_input("Password", type="password")
+
+if st.sidebar.button("Login"):
+    if check_credentials(username, password):
+        st.sidebar.success("Logged in as {}".format(username))
+        main()
+    else:
+        st.sidebar.error("Incorrect username or password")
