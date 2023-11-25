@@ -3,7 +3,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from pydantic import BaseModel
 
 # データベースエンジンの設定
-engine = create_engine("mysql+pymysql://user:userpassword@localhost/demo", echo=True)
+engine = create_engine(
+    "mysql+pymysql://user:userpassword@localhost:3306/demo", echo=True
+)
 
 # ベースクラスの作成
 Base = declarative_base()
