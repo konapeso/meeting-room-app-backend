@@ -1,79 +1,170 @@
 import streamlit as st
-from utils.http_client import fetch
-
-# secrets.toml からユーザー名とパスワードを読み込む
-usernames = st.secrets["usernames"]["users"]
-passwords = st.secrets["passwords"]["users"]
-
-# ユーザー名とパスワードを辞書として格納
-credentials = dict(zip(usernames, passwords))
+import datetime
+import requests
+import json
+import pandas as pd
 
 
-def check_credentials(username, password):
-    """与えられたユーザー名とパスワードの組み合わせが正しいか確認する"""
-    return credentials.get(username) == password
+page = st.sidebar.selectbox("Choose your page", ["users", "rooms", "bookings"])
+
+if page == "users":
+    st.title("ユーザー登録画面")
+    with st.form(key="user"):
+        # user_id: int = random.randint(0, 10)
+        user_name: str = st.text_input(label="ユーザー名", max_chars=12)
+        data = {
+            # "user_id": user_id,
+            "user_name": user_name
+        }
+        submit_button = st.form_submit_button(label="リクエスト送信")
+
+    if submit_button:
+        url = "http://127.0.0.1:8000/users"
+        res = requests.post(url, data=json.dumps(data))
+        if res.status_code == 200:
+            st.success("ユーザー登録完了")
+        st.json(res.json())
 
 
-if "editing_user" not in st.session_state:
-    st.session_state["editing_user"] = None
+elif page == "rooms":
+    st.title("会議室登録画面")
+    with st.form(key="room"):
+        # room_id: int = random.randint(0, 10)
+        room_name: str = st.text_input("部屋名", max_chars=12)
+        capacity: int = st.number_input("定員", step=1)
+        data = {
+            # "room_id": room_id,
+            "room_name": room_name,
+            "capacity": capacity,
+        }
+        submit_button = st.form_submit_button(label="会議室登録")
+
+    if submit_button:
+        url = "http://127.0.0.1:8000/rooms"
+        res = requests.post(url, data=json.dumps(data))
+        if res.status_code == 200:
+            st.success("会議室登録完了")
+        st.json(res.json())
 
 
-def main():
-    """メインのアプリケーション"""
-    st.title("Streamlit app")
+elif page == "bookings":
+    st.title("会議室予約画面")
+    # ユーザー一覧の取得
+    url_users = "http://127.0.0.1:8000/users"
+    res = requests.get(url_users)
+    users = res.json()
+    users_name = {}
+    for user in users:
+        users_name[user["user_name"]] = user["user_id"]
 
-    # ユーザーのデータを送信する部分
-    name = st.text_input("Name")
-    fullname = st.text_input("Full Name")
-    nickname = st.text_input("Nickname")
+    # 会議室一覧の取得
+    url_rooms = "http://localhost:8000/rooms"
+    res = requests.get(url_rooms)
+    rooms = res.json()
+    rooms_name = {}
+    for room in rooms:
+        rooms_name[room["room_name"]] = {
+            "room_id": room["room_id"],
+            "capacity": room["capacity"],
+        }
 
-    if st.button("Submit Data"):
-        if name and fullname and nickname:
-            user_data = {"name": name, "fullname": fullname, "nickname": nickname}
-            response = fetch("http://localhost:8000/users/", "POST", user_data)
-            if response.status_code == 200:
-                st.success("User created successfully!")
-            else:
-                st.error(f"Failed to create user: {response.status_code}")
+    st.write("### 会議室一覧")
+    df_rooms = pd.DataFrame(rooms)
+    df_rooms.columns = ["会議室名", "定員", "会議室ID"]
+    st.table(df_rooms)
+
+    url_bookings = "http://localhost:8000/bookings"
+    res = requests.get(url_bookings)
+    bookings = res.json()
+    df_bookings = pd.DataFrame(bookings)
+
+    users_id = {}
+    for user in users:
+        users_id[user["user_id"]] = user["user_name"]
+
+    rooms_id = {}
+    for room in rooms:
+        rooms_id[room["room_id"]] = {
+            "room_name": room["room_name"],
+            "capacity": room["capacity"],
+        }
+
+    # IDを各値に変更
+    to_user_name = lambda x: users_id[x]
+    to_room_name = lambda x: rooms_id[x]["room_name"]
+    to_datetime = lambda x: datetime.datetime.fromisoformat(x).strftime(
+        "%Y/%m/%d %H:%M"
+    )
+
+    # 特定の列に適用
+    df_bookings["user_id"] = df_bookings["user_id"].map(to_user_name)
+    df_bookings["room_id"] = df_bookings["room_id"].map(to_room_name)
+    df_bookings["start_datetime"] = df_bookings["start_datetime"].map(to_datetime)
+    df_bookings["end_datetime"] = df_bookings["end_datetime"].map(to_datetime)
+
+    df_bookings = df_bookings.rename(
+        columns={
+            "user_id": "予約者名",
+            "room_id": "会議室名",
+            "booked_num": "予約人数",
+            "start_datetime": "開始時刻",
+            "end_datetime": "終了時刻",
+            "booking_id": "予約番号",
+        }
+    )
+
+    st.write("### 予約一覧")
+    st.table(df_bookings)
+
+    with st.form(key="booking"):
+        # booking_id: int = random.randint(0, 10)
+        user_name: str = st.selectbox("予約社名", list(users_name.keys()))
+        room_name: str = st.selectbox("会議室名", list(rooms_name.keys()))
+        booked_num: int = st.number_input("予約人数", step=1, min_value=1)
+        date = st.date_input("日付を入力", min_value=datetime.date.today())
+        start_time = st.time_input("開始時刻:", value=datetime.time(hour=9, minute=0))
+        end_time = st.time_input("終了時刻:", value=datetime.time(hour=20, minute=0))
+        submit_button = st.form_submit_button(label="予約登録")
+
+    if submit_button:
+        user_id: int = users_name[user_name]
+        room_id: int = rooms_name[room_name]["room_id"]
+        capacity: int = rooms_name[room_name]["capacity"]
+        data = {
+            "user_id": user_id,
+            "room_id": room_id,
+            "booked_num": booked_num,
+            "start_datetime": datetime.datetime(
+                year=date.year,
+                month=date.month,
+                day=date.day,
+                hour=start_time.hour,
+                minute=start_time.minute,
+            ).isoformat(),
+            "end_datetime": datetime.datetime(
+                year=date.year,
+                month=date.month,
+                day=date.day,
+                hour=end_time.hour,
+                minute=end_time.minute,
+            ).isoformat(),
+        }
+
+        # 定員より多い予約人数の場合
+        if booked_num > capacity:
+            st.error(f"{room_name}の定員は{capacity}人です。予約人数を減らしてください。")
+        # 開始時刻 >= 終了時刻
+        elif start_time >= end_time:
+            st.error("開始時刻が終了時刻を超えています。")
+        elif start_time < datetime.time(
+            hour=9, minute=0, second=0
+        ) or end_time > datetime.time(hour=20, minute=0, second=0):
+            st.error("利用時間は9:00~20:00です。")
         else:
-            st.error("All fields are required")
-
-    response = fetch("http://localhost:8000/users/", "GET", {})
-    if response.status_code == 200:
-        users = response.json()["users"]
-        for user in users:
-            st.write(
-                f"Name: {user['name']}, Full Name: {user['fullname']}, Nickname: {user['nickname']}"
-            )
-            if st.button("Edit", key=f"edit_{user['id']}"):
-                # 編集処理
-                pass
-            if st.button("Delete", key=f"delete_{user['id']}"):
-                # 削除処理
-                pass
-    else:
-        st.error(f"Failed to load users: {response.status_code}")
-
-
-# セッション状態の初期化
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-
-# ログインフォーム
-username = st.sidebar.text_input("Username")
-password = st.sidebar.text_input("Password", type="password")
-
-if st.sidebar.button("Login"):
-    if check_credentials(username, password):
-        st.sidebar.success("Logged in as {}".format(username))
-        st.session_state["logged_in"] = True
-    else:
-        st.sidebar.error("Incorrect username or password")
-
-# ログアウトボタン（オプション）
-if st.sidebar.button("Logout"):
-    st.session_state["logged_in"] = False
-
-# ユーザーがログインしている場合のみメインアプリケーションを表示
-if st.session_state["logged_in"]:
-    main()
+            url = "http://127.0.0.1:8000/bookings"
+            res = requests.post(url, data=json.dumps(data))
+            if res.status_code == 200:
+                st.success("予約完了しました")
+            elif res.status_code == 404 and res.json()["detail"] == "Already booked":
+                st.error("指定の時間にはすでに予約が入っています。")
+            st.json(res.json())

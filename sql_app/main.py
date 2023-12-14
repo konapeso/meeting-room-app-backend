@@ -1,69 +1,55 @@
-import logging
-from fastapi import FastAPI
-from .setting import User, session, UserCreate  # UserCreate をインポート
+from typing import List
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
 
+from . import crud, models, schemas
+from .database import SessionLocal, engine
 
-# ロギングの設定
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
-@app.get("/")
-async def read_root():
-    logger.info("Root endpoint called")
-    return {"Hello": "World"}
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
-@app.get("/users/")
-def read_users():
-    users = session.query(User).all()
-    users_data = [
-        {
-            "id": user.id,
-            "name": user.name,
-            "fullname": user.fullname,
-            "nickname": user.nickname,
-        }
-        for user in users
-    ]
-    return {"users": users_data}
+# Read
+@app.get("/users", response_model=List[schemas.User])
+async def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
 
 
-@app.post("/users/")
-def create_user(user_create: UserCreate):
-    new_user = User(
-        name=user_create.name,
-        fullname=user_create.fullname,
-        nickname=user_create.nickname,
-    )
-    session.add(new_user)
-    session.commit()
-    return {"message": "User created successfully", "user": user_create}
+@app.get("/rooms", response_model=List[schemas.Room])
+async def read_rooms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    rooms = crud.get_rooms(db, skip=skip, limit=limit)
+    return rooms
 
 
-@app.put("/users/{user_id}")
-def update_user(user_id: int, user_update: UserCreate):
-    user_to_update = session.query(User).filter(User.id == user_id).first()
-    if not user_to_update:
-        return {"error": "User not found"}
-
-    user_to_update.name = user_update.name
-    user_to_update.fullname = user_update.fullname
-    user_to_update.nickname = user_update.nickname
-    session.commit()
-
-    return {"message": "User updated successfully", "user": user_update}
+@app.get("/bookings", response_model=List[schemas.Booking])
+async def read_bookings(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    bookings = crud.get_bookings(db, skip=skip, limit=limit)
+    return bookings
 
 
-@app.delete("/users/{user_id}")
-def delete_user(user_id: int):
-    user_to_delete = session.query(User).filter(User.id == user_id).first()
-    if not user_to_delete:
-        return {"error": "User not found"}
+# Create
+@app.post("/users", response_model=schemas.User)
+async def create_users(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    return crud.create_user(db=db, user=user)
 
-    session.delete(user_to_delete)
-    session.commit()
 
-    return {"message": "User deleted successfully"}
+@app.post("/rooms", response_model=schemas.Room)
+async def create_rooms(room: schemas.RoomCreate, db: Session = Depends(get_db)):
+    return crud.create_room(db=db, room=room)
+
+
+@app.post("/bookings", response_model=schemas.Booking)
+async def create_bookings(
+    booking: schemas.BookingCreate, db: Session = Depends(get_db)
+):
+    return crud.create_booking(db=db, booking=booking)
