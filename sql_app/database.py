@@ -5,7 +5,7 @@ from pydantic import BaseModel
 username = "admin"
 password = "zme0aju_hpe1ebm*BWY"
 host = "eve-backend-db.cwoji7dwklcq.ap-southeast-2.rds.amazonaws.com"
-database = "eve-backend-db"
+database = "test_db"
 # データベースエンジンの設定
 engine = create_engine(
     f"mysql+pymysql://{username}:{password}@{host}/{database}", echo=True
