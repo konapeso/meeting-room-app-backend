@@ -24,7 +24,7 @@
 - フロントエンド: Next.js
 - データ管理: Streamlit
 - バックエンド: FastAPI
-- データベース: MySQL / PostgreSQL
+- データベース: MySQL
 
 ## セットアップ手順
 
