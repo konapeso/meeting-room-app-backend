@@ -16,8 +16,6 @@ if page == "users":
         user_email = st.text_input(label="メールアドレス")
         is_executive = st.checkbox("役員ですか？")
         password = st.text_input(label="パスワード", type="password")
-        if len(password) < 8:
-            st.error("パスワードは最低8文字必要です。")
         data = {
             "user_name": user_name,
             "user_email": user_email,
@@ -32,6 +30,18 @@ if page == "users":
         if res.status_code == 200:
             st.success("ユーザー登録完了")
         st.json(res.json())
+
+    st.subheader("ユーザー一覧")
+    # ユーザーデータの取得
+    url_users = "http://127.0.0.1:8000/users"
+    res = requests.get(url_users)
+    if res.status_code == 200:
+        users = res.json()
+        df_users = pd.DataFrame(users)
+        df_users.columns = ["ユーザー名", "メールアドレス", "役員", "ユーザーID"]
+        st.table(df_users)
+    else:
+        st.error("ユーザー情報の取得に失敗しました。")
 
 
 elif page == "rooms":

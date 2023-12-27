@@ -55,7 +55,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.jsサーバーのURL
+    allow_origins=["https://meeting-room-app-silk.vercel.app"],  # Next.jsサーバーのURL
     allow_credentials=True,
     allow_methods=["*"],  # すべてのHTTPメソッドを許可
     allow_headers=["*"],  # すべてのHTTPヘッダーを許可

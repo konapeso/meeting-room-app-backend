@@ -7,10 +7,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword # ルートユーザーのパスワード
-      MYSQL_DATABASE: demo # 作成するデータベース
-      MYSQL_USER: user # 新しいユーザー名
-      MYSQL_PASSWORD: userpassword # 新しいユーザーのパスワード
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: demo
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
     volumes:
       - mysql-data:/var/lib/mysql
       - ./my.cnf:/etc/mysql/conf.d/custom.cnf

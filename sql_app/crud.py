@@ -42,7 +42,7 @@ def create_user(db: Session, user: schemas.UserCreate):
 # ユーザー認証
 def authenticate_user(db: Session, user_id: int, password: str):
     db_user = db.query(models.User).filter(models.User.user_id == user_id).first()
-    if db_user and bcrypt.checkpw(password.encode(), db_user.password_hash):
+    if db_user and bcrypt.checkpw(password.encode(), db_user.password_hash.encode()):
         return db_user
     return None
 
